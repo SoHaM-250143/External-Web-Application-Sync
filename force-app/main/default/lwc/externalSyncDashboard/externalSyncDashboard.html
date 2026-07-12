@@ -1,60 +1,77 @@
 <template>
-    <lightning-card title="External Web App Sync" icon-name="standard:service_contract">
-        <div class="slds-m-around_medium">
-            <!-- Spinner for loading states -->
-            <template if:true={isLoading}>
-                <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
-            </template>
+  <lightning-card
+    title="External Web App Sync"
+    icon-name="standard:service_contract"
+  >
+    <div class="slds-m-around_medium">
+      <!-- Spinner for loading states -->
+      <template if:true={isLoading}>
+        <lightning-spinner
+          alternative-text="Loading"
+          size="medium"
+          variant="brand"
+        ></lightning-spinner>
+      </template>
 
-            <!-- Actions grid (Search + Sync Button) -->
-            <div class="slds-grid slds-wrap slds-gutters slds-alignment-vertical_bottom slds-m-bottom_medium">
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3">
-                    <lightning-input
-                        type="search"
-                        label="Search Repositories"
-                        placeholder="Filter by name or description..."
-                        value={searchKey}
-                        onchange={handleSearchKeyChange}
-                    ></lightning-input>
-                </div>
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-text-align_right slds-m-top_small">
-                    <lightning-button
-                        label="Sync Now"
-                        title="Sync with external API"
-                        onclick={handleSync}
-                        icon-name="utility:refresh"
-                        variant="brand"
-                        class="slds-m-left_x-small"
-                    ></lightning-button>
-                </div>
-            </div>
-
-            <!-- Error message if any -->
-            <template if:true={error}>
-                <div class="slds-notify slds-notify_alert slds-alert_error slds-m-bottom_medium" role="alert">
-                    <span class="slds-assistive-text">error</span>
-                    <h2>Error loading repositories: {errorMessage}</h2>
-                </div>
-            </template>
-
-            <!-- Repositories Datatable -->
-            <template if:true={repositories}>
-                <div style="height: 350px;">
-                    <lightning-datatable
-                        key-field="Id"
-                        data={repositories}
-                        columns={columns}
-                        hide-checkbox-column
-                    ></lightning-datatable>
-                </div>
-            </template>
-
-            <!-- Empty state -->
-            <template if:false={hasData}>
-                <div class="slds-align_absolute-center slds-text-color_weak slds-m-around_large">
-                    No repositories synchronized yet. Click "Sync Now" to retrieve data from GitHub.
-                </div>
-            </template>
+      <!-- Actions grid (Search + Sync Button) -->
+      <div
+        class="slds-grid slds-wrap slds-gutters slds-alignment-vertical_bottom slds-m-bottom_medium"
+      >
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3">
+          <lightning-input
+            type="search"
+            label="Search Repositories"
+            placeholder="Filter by name or description..."
+            value={searchKey}
+            onchange={handleSearchKeyChange}
+          ></lightning-input>
         </div>
-    </lightning-card>
+        <div
+          class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-text-align_right slds-m-top_small"
+        >
+          <lightning-button
+            label="Sync Now"
+            title="Sync with external API"
+            onclick={handleSync}
+            icon-name="utility:refresh"
+            variant="brand"
+            class="slds-m-left_x-small"
+          ></lightning-button>
+        </div>
+      </div>
+
+      <!-- Error message if any -->
+      <template if:true={error}>
+        <div
+          class="slds-notify slds-notify_alert slds-alert_error slds-m-bottom_medium"
+          role="alert"
+        >
+          <span class="slds-assistive-text">error</span>
+          <h2>Error loading repositories: {errorMessage}</h2>
+        </div>
+      </template>
+
+      <!-- Repositories Datatable -->
+      <template if:true={repositories}>
+        <div style="height: 350px">
+          <lightning-datatable
+            key-field="Id"
+            data={repositories}
+            columns={columns}
+            hide-checkbox-column
+          ></lightning-datatable>
+        </div>
+      </template>
+
+      <!-- Empty state -->
+      <template if:false={hasData}>
+        <div
+          class="slds-align_absolute-center slds-text-color_weak slds-m-around_large"
+        >
+          No repositories synchronized yet. Click "Sync Now" to retrieve data
+          from GitHub.
+        </div>
+      </template>
+    </div>
+  </lightning-card>
 </template>
