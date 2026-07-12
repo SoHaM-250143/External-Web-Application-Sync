@@ -48,6 +48,23 @@ public class ExternalSyncControllerTest {
     System.assertEquals('https://github.com/google/test-repo-1', repo1.URL__c);
     System.assertEquals(100, repo1.Stars__c);
     System.assertEquals(5, repo1.Open_Issues__c);
+
+    // Verify success integration log was created
+    List<Integration_Log__c> logs = [
+      SELECT Status__c, Sync_Count__c, Integration_Type__c
+      FROM Integration_Log__c
+    ];
+    System.assertEquals(
+      1,
+      logs.size(),
+      'Should have written exactly one log record'
+    );
+    System.assertEquals('Success', logs[0].Status__c);
+    System.assertEquals(2, logs[0].Sync_Count__c);
+    System.assertEquals(
+      'GitHub Repositories Sync',
+      logs[0].Integration_Type__c
+    );
   }
 
   @isTest
@@ -113,6 +130,24 @@ public class ExternalSyncControllerTest {
     System.assert(
       exceptionThrown,
       'An AuraHandledException should have been thrown on HTTP failure code'
+    );
+
+    // Verify error integration log was created
+    List<Integration_Log__c> logs = [
+      SELECT Status__c, Sync_Count__c, Message__c
+      FROM Integration_Log__c
+    ];
+    System.assertEquals(
+      1,
+      logs.size(),
+      'Should have recorded an integration error log'
+    );
+    System.assertEquals('Error', logs[0].Status__c);
+    System.assertEquals(0, logs[0].Sync_Count__c);
+    System.assert(
+      logs[0]
+        .Message__c.contains('Failed to sync. API returned status code: 400'),
+      'Error log should contain status message'
     );
   }
 

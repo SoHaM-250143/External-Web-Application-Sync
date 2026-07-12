@@ -47,6 +47,8 @@ public with sharing class ExternalSyncController {
           recordsToUpsert.add(rec);
         }
 
+        Integer successCount = 0;
+        String errorMessage = '';
         if (!recordsToUpsert.isEmpty()) {
           Schema.SObjectField externalIdField = External_System_Data__c.Fields.External_ID__c;
           Database.UpsertResult[] results = Database.upsert(
@@ -57,24 +59,76 @@ public with sharing class ExternalSyncController {
 
           // Inspect results for potential errors
           for (Database.UpsertResult sr : results) {
-            if (!sr.isSuccess()) {
+            if (sr.isSuccess()) {
+              successCount++;
+            } else {
+              errorMessage +=
+                'Error upserting record: ' +
+                sr.getErrors()[0].getMessage() +
+                '\n';
               System.debug(
                 'Error upserting record: ' + sr.getErrors()[0].getMessage()
               );
             }
           }
         }
+
+        if (String.isNotBlank(errorMessage)) {
+          logIntegration(
+            'Error',
+            'Partial success. Errors:\n' + errorMessage,
+            successCount
+          );
+        } else {
+          logIntegration(
+            'Success',
+            'Successfully synced ' + successCount + ' repositories.',
+            successCount
+          );
+        }
       } else {
-        throw new AuraHandledException(
+        String errBody =
           'Failed to sync. API returned status code: ' +
-            response.getStatusCode() +
-            ' (' +
-            response.getStatus() +
-            ')'
-        );
+          response.getStatusCode() +
+          ' (' +
+          response.getStatus() +
+          ')';
+        logIntegration('Error', errBody, 0);
+        throw new AuraHandledException(errBody);
       }
     } catch (Exception ex) {
+      logIntegration(
+        'Error',
+        'Exception caught: ' +
+          ex.getMessage() +
+          '\nStack trace:\n' +
+          ex.getStackTraceString(),
+        0
+      );
       throw new AuraHandledException('Callout failed: ' + ex.getMessage());
+    }
+  }
+
+  /**
+   * Writes diagnostic details to the Integration_Log__c custom object.
+   */
+  private static void logIntegration(
+    String status,
+    String message,
+    Integer syncCount
+  ) {
+    try {
+      Integration_Log__c log = new Integration_Log__c();
+      log.Status__c = status;
+      log.Integration_Type__c = 'GitHub Repositories Sync';
+      log.Message__c = (message != null &&
+        message.length() > 32768)
+        ? message.substring(0, 32765) + '...'
+        : message;
+      log.Sync_Count__c = syncCount;
+      insert log;
+    } catch (Exception ex) {
+      System.debug('Failed to write integration log: ' + ex.getMessage());
     }
   }
 
