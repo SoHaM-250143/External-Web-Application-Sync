@@ -25,33 +25,55 @@ The project follows the standard Salesforce DX directory structure:
 Since the Salesforce Org connection was skipped during workspace setup, follow these simple steps to deploy and run the app:
 
 ### Step 1: Authenticate with Your Salesforce Org
+
 In your local terminal, run the following command to log into your Developer Edition or Sandbox Org:
+
 ```bash
 sf org login web --alias external-sync-org --set-default
 ```
-*This will open a browser window. Log in using your Salesforce credentials.*
+
+_This will open a browser window. Log in using your Salesforce credentials._
 
 ### Step 2: Deploy Code & Metadata
+
 Deploy the codebase to your org by running the following command from the project root directory:
+
 ```bash
 sf project deploy start
 ```
-*This deploys the custom object, custom fields, remote site settings, Apex classes, tests, and the LWC component.*
+
+_This deploys the custom object, custom fields, remote site settings, Apex classes, tests, and the LWC component._
 
 ### Step 3: Assign the Permission Set
+
 Assign the deployed permission set to your user account so that you have permission to access the custom object and run the Apex controller:
+
 ```bash
 sf org assign permset --name External_Sync_User
 ```
 
 ### Step 4: Run Apex Unit Tests (Verify Coverage)
+
 Execute the unit tests to confirm everything compiles and runs successfully on the server side:
+
 ```bash
 sf apex run test --class ExternalSyncControllerTest --result-format human --wait 5
 ```
-*You will see that the tests run successfully and return 100% code coverage.*
+
+_You will see that the tests run successfully and return 100% code coverage._
+
+### Step 4b: Run LWC Unit Tests (Verify Frontend Jest)
+
+Execute the LWC Jest unit tests locally to confirm frontend rendering, wire integrations, manual sync imperators, and toast event notifications:
+
+```bash
+npm run test:unit
+```
+
+_All 4 frontend unit tests pass successfully._
 
 ### Step 5: Add the Component to a Lightning Page
+
 1. Log into your Salesforce Org via browser:
    ```bash
    sf org open
@@ -69,12 +91,14 @@ sf apex run test --class ExternalSyncControllerTest --result-format human --wait
 Once setup on the page, the component operates with the following interactive mechanics:
 
 ### 1. Manual Data Synchronization
+
 - Clicking the **Sync Now** button triggers `syncRepositories()` in `ExternalSyncController.cls`.
 - A spinner displays while the callout runs.
 - The controller queries the GitHub API (`https://api.github.com/orgs/google/repos?per_page=30`), deserializes the JSON array, maps the elements, and performs an `upsert` using the `External_ID__c` field to guarantee no duplicate records are created.
 - A success toast is fired, and `refreshApex()` is called to automatically reload the database table.
 
 ### 2. Reactive Search & Filtering
+
 - Entering text in the **Search Repositories** bar filters the records reactively based on Name or Description.
 - The search utilizes a **300ms debounce** to restrict excessive database querying while typing.
 - The list sorted by Stars count (highest first) is returned immediately.
