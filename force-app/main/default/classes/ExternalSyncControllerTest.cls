@@ -177,4 +177,45 @@ public class ExternalSyncControllerTest {
     System.assertEquals(0, resultsNone.size());
     Test.stopTest();
   }
+
+  @isTest
+  static void testSchedulerAndQueueable() {
+    String jsonResponse = '[{"id": 12345, "name": "test-repo-1", "description": "This is test repo 1", "html_url": "https://github.com/google/test-repo-1", "stargazers_count": 100, "open_issues_count": 5}]';
+
+    Test.startTest();
+    // Set mock callout
+    Test.setMock(
+      HttpCalloutMock.class,
+      new ExternalSyncMock(200, 'OK', jsonResponse)
+    );
+
+    // Schedule the job
+    String cronExpr = '0 0 12 * * ?'; // Daily at 12 PM
+    String jobId = System.schedule(
+      'ExternalSyncSchedulerTestJob',
+      cronExpr,
+      new ExternalSyncScheduler()
+    );
+
+    Test.stopTest(); // Stops the test and forces asynchronous queueable methods to execute
+
+    // Verify scheduler enqueued job and records were synced
+    CronTrigger ct = [
+      SELECT Id, CronExpression, TimesTriggered, NextFireTime
+      FROM CronTrigger
+      WHERE Id = :jobId
+    ];
+    System.assertEquals(cronExpr, ct.CronExpression);
+    System.assertEquals(0, ct.TimesTriggered);
+
+    List<External_System_Data__c> repos = [
+      SELECT Name
+      FROM External_System_Data__c
+    ];
+    System.assertEquals(
+      1,
+      repos.size(),
+      'Queueable job triggered by the scheduler should have synced the repository'
+    );
+  }
 }

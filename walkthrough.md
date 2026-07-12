@@ -81,8 +81,17 @@ _All 4 frontend unit tests pass successfully._
 2. Navigate to **Setup** > **Lightning App Builder**.
 3. Create a new **Lightning App Page** (e.g., named "External Sync Dashboard").
 4. Under the custom components list on the left, locate **External Sync Dashboard** LWC.
-5. Drag and drop the component onto the page layout.
-6. Click **Save** and **Activate** the page (make it visible to users).
+5. Click **Save** and **Activate** the page (make it visible to users).
+
+### Step 6: Configure Scheduled Synchronization (Optional)
+
+To run synchronization automatically on a schedule (e.g., daily at midnight), execute this anonymous Apex statement:
+
+```bash
+sf apex run --body "System.schedule('Daily External Sync', '0 0 0 * * ?', new ExternalSyncScheduler());"
+```
+
+_This registers the scheduled job, which triggers the asynchronous `ExternalSyncQueueable` runner to complete the sync without hitting callout restrictions._
 
 ---
 
