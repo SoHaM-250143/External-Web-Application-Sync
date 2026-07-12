@@ -102,3 +102,14 @@ Once setup on the page, the component operates with the following interactive me
 - Entering text in the **Search Repositories** bar filters the records reactively based on Name or Description.
 - The search utilizes a **300ms debounce** to restrict excessive database querying while typing.
 - The list sorted by Stars count (highest first) is returned immediately.
+
+---
+
+## Continuous Integration (CI)
+
+This repository includes a GitHub Actions configuration under `.github/workflows/ci.yml`. On every push to the `main` branch, the pipeline automatically:
+
+1. Installs Node dependencies using clean install (`npm ci`).
+2. Validates code formatting with Prettier (`npm run prettier:verify`).
+3. Runs linter validation checks (`npm run lint`).
+4. Executes the LWC Jest unit tests (`npm run test:unit`) to confirm all components are function-tested.
